@@ -73,32 +73,32 @@ import { combineReducers, createStore } from "redux"
 // 19-Feb-2025 
 // Let's Learn about merge reducers
 
-const cashDeposit = (state = 100 , {type , payload}) => {
-    if (type == "cashDeposit") {
-        return state + payload
-    }
-    return state
-}
+// const cashDeposit = (state = 100 , {type , payload}) => {
+//     if (type == "cashDeposit") {
+//         return state + payload
+//     }
+//     return state
+// }
 
-const withdrawMoney = (state = 50 , {type , payload}) => {
-    if (type == "withdrawMoney") {
-        if (state < payload) {
-            return "Sorry , you have lesser amount in bank ..."
-        }
-        else {
-            return state - payload
-        }
-    }
-    return state
-}
+// const withdrawMoney = (state = 50 , {type , payload}) => {
+//     if (type == "withdrawMoney") {
+//         if (state < payload) {
+//             return "Sorry , you have lesser amount in bank ..."
+//         }
+//         else {
+//             return state - payload
+//         }
+//     }
+//     return state
+// }
 
-const checkBalance= (state = 200 , {type}) => {
+// const checkBalance= (state = 200 , {type}) => {
     
-    if (type == "checkBalance") {
-        return state
-    }
-    return state
-}   
+//     if (type == "checkBalance") {
+//         return state
+//     }
+//     return state
+// }   
 
 
 // Now let's call all these reducers separately 
@@ -111,16 +111,69 @@ const checkBalance= (state = 200 , {type}) => {
 
 // Now , If I want to combinely call all of them: 
 
-const mergeReducers = combineReducers({
-    BalanceCheck : checkBalance , 
-    deposit: cashDeposit,
-    withdraw: withdrawMoney
-})
+// const mergeReducers = combineReducers({
+//     BalanceCheck : checkBalance , 
+//     deposit: cashDeposit,
+//     withdraw: withdrawMoney
+// })
 
-const bankStore = createStore(mergeReducers)
+// const bankStore = createStore(mergeReducers)
 
-bankStore.dispatch({type:"cashDeposit" , payload: 500})
-bankStore.dispatch({type:"withdrawMoney" , payload: 40})
+// bankStore.dispatch({type:"cashDeposit" , payload: 500})
+// bankStore.dispatch({type:"withdrawMoney" , payload: 40})
+// bankStore.dispatch({type: "checkBalance"})
+
+// console.log(bankStore.getState())
+
+// --------------------------------- Dynamic state
+
+// Now, we have to create a dynamic state in redux 
+
+// Initial State
+const initialState = {
+    cash: 500
+};
+
+// Deposit money reducer
+const depositMoney = (state = initialState, { type, payload }) => {
+    if (type === "deposit") {
+        return { ...state, cash: state.cash + payload }; // ✅ State ko update karna
+    }
+    return state;
+};
+
+// Withdraw money reducer
+const WithdrawMoney = (state = initialState, { type, payload }) => {
+    if (type === "withdraw") {
+        if (state.cash < payload) {
+            return { ...state, error: "Error! You are withdrawing more than available balance!" }; // ✅ Error message ko state mein store karo
+        }
+        return { ...state, cash: state.cash - payload }; // ✅ Update balance
+    }
+    return state;
+};
+
+// Check balance reducer
+const checkBalance = (state = initialState, { type }) => {
+    if (type === "checkBalance") {
+        return state; // ✅ Poora state return karo taake Redux sahi kaam kare
+    }
+    return state;
+};
+
+// Combining Reducers
+const CombineReducers = combineReducers({
+    checkAmount: checkBalance,
+    withDraw: WithdrawMoney,
+    deposit: depositMoney
+});
+
+// Creating Store
+const bankStore = createStore(CombineReducers);
+
+bankStore.dispatch({type: "withdraw" , payload: 40 })
+bankStore.dispatch({type: "deposit" , payload: 400 })
 bankStore.dispatch({type: "checkBalance"})
 
-console.log(bankStore.getState())
+// Checking the Initial State
+console.log(bankStore.getState()); // ✅ Initial state sahi print hogi
